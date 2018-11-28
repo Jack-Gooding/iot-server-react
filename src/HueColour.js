@@ -8,12 +8,12 @@ export class HueColour extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      brightness: 0,
-      red: 0,
-      green: 0,
-      blue: 0,
+      brightness: Math.random()*100,
+      red: Math.random()*255,
+      green: Math.random()*255,
+      blue: Math.random()*255,
       id: 0,
-      on: false,
+      on: Math.round(Math.random()),
     };
 
     this.handleSlider = this.handleSlider.bind(this); //This is needed because getHueData uses the 'this' keyword
@@ -68,6 +68,7 @@ componentWillReceiveProps(nextProps) {
 
 render() {
   let checkType; //Checks to see if the light is capable of colour changing. Adds three sliders if so.
+  let onState;
   if (this.props.type === "Extended color light") {
     checkType = <Col sm="9">
                     <Row>
@@ -81,12 +82,18 @@ render() {
                     </Row>
                   </Col>;
   };
+  if (this.state.on) {
+    onState = <div style={{width: "10px", height: "10px", borderRadius : "15px", background: "green", border: "solid 1px black",  display: "inline-block", marginLeft: "5px"}}></div>;
+  } else {
+    onState = <div style={{width: "10px", height: "10px", borderRadius : "15px", background: "black", border: "solid 1px black", display: "inline-block", marginLeft: "5px"}}></div>;
+  };
     return (
       <Row style={{margin: "10px"}}>
         <Col sm="2">
         <p>
-        {this.props.name}<br/>
-        On: {this.state.on? 'on' : 'off'}
+        {this.props.name}
+        <br/>
+        On: {this.state.on? 'on' : 'off'}{onState}
         </p>
         </Col>
         <Col sm="1">
