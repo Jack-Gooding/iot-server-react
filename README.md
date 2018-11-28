@@ -4,6 +4,8 @@ This is a server I've made for personal use, to control the IoT devices in my ho
 
 Two Node.js instances are required to run the IoT Server API, and the react renderer.
 
+## Semi-function demo available at: http://35.178.73.23:3000/
+
 ### The devices that this server currently can control:
   - Philips Hue
   - TP-Link Smart Plugs
