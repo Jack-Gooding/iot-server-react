@@ -1,0 +1,15 @@
+input {
+
+
+}
+
+.tplink-name, .tplink-slider, .tplink-state  {
+  width: 40%;
+  margin: 5px 15px;
+  max-width: 100px;
+  display: inline-block;
+}
+
+.tplink-slider {
+  transform: translateY(10px);
+}
