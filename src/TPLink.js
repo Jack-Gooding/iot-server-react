@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Col } from 'reactstrap';
+import Slider from './Slider';
 
 import './TPLink.css';
 const axios = require('axios');
@@ -21,6 +22,7 @@ export class TPLink extends Component {
       }],
     };
     this.handleChange = this.handleChange.bind(this);//This is needed because getHueData uses the 'this' keyword
+
   };
 
   updateState(data) {
@@ -30,6 +32,7 @@ export class TPLink extends Component {
         name:  plugs.name,
         on: plugs.on,
         ip: plugs.ip,
+        on_time: plugs.on_time,
       })
     });
     this.setState({plugs: plugArray,});
@@ -46,25 +49,22 @@ export class TPLink extends Component {
     });
   }
 
-  handleChange(event) {
-      let index = event.target.getAttribute('index');
-      console.log(index);
-      axios.post('/api/tplink', {
-        name:  this.state.plugs[index].name,
-        on: this.state.plugs[index].on,
-        ip: this.state.plugs[index].ip,
-        index: index,
-      })
-    .then(response => {
-      console.log(response.data);
-      this.updateState(response);
+  handleChange(index, newValue) {
+    console.log(newValue);
+    axios.post('/api/tplink', {
+      name:  this.state.plugs[index].name,
+      on: this.state.plugs[index].on,
+      ip: this.state.plugs[index].ip,
+      index: index,
     })
-    .catch(error => {
-      console.log(error);
-    });
+  .then(response => {
+    console.log(response.data);
+    this.updateState(response);
+  })
+  .catch(error => {
+    console.log(error);
+  });
   }
-
-
 
 
 render() {
@@ -78,8 +78,9 @@ render() {
   <Col className="plug" key={i}>
   <div>
     <p className="tplink-name" style={pStyle}>{plug.name}</p>
-    <input className="tplink-slider" type="range" min="0" max="1"  onChange={this.handleChange} onDoubleClick={this.handleChange} value={plug.on} index={i}/>
+    <Slider type="range" min="0" max="1"  onChange={this.handleChange} value={this.state.plugs[i].on} index={i}/>
     <p className="tplink-state" style={pStyle}>{plug.on === 1 ? "On" : "Off"}</p>
+    <p>{plug.on_time}</p>
     </div>
 
     </Col>

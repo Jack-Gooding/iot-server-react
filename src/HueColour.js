@@ -8,7 +8,7 @@ export class HueColour extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      brightness: Math.random()*100,
+      brightness: Math.random()*255,
       red: Math.random()*255,
       green: Math.random()*255,
       blue: Math.random()*255,
@@ -77,15 +77,15 @@ render() {
                       <input style={{width: "100%", }} type="range" min="0" max="255" color="green" value={this.state.green} onChange={this.handleSlider}/>
                       <input style={{width: "100%", }} type="range" min="0" max="255" color="blue" value={this.state.blue} onChange={this.handleSlider}/>
                     </Col>
-                    <Col sm="4" className="hueSwatch" style={ { background: `rgb(${ this.state.red },${ this.state.green },${ this.state.blue })`, } }>
+                    <Col sm="4" className="hueSwatch" style={ { background: `rgb(${ this.state.red*(this.state.brightness/100) },${ this.state.green*(this.state.brightness/100) },${ this.state.blue*(this.state.brightness/100) })`, } }>
                     </Col>
                     </Row>
                   </Col>;
   };
   if (this.state.on) {
-    onState = <div style={{width: "10px", height: "10px", borderRadius : "15px", background: "green", border: "solid 1px black",  display: "inline-block", marginLeft: "5px"}}></div>;
+    onState = <span style={{width: "10px", height: "10px", borderRadius : "15px", background: "green", border: "solid 1px black",  display: "inline-block", marginLeft: "5px"}}></span>;
   } else {
-    onState = <div style={{width: "10px", height: "10px", borderRadius : "15px", background: "black", border: "solid 1px black", display: "inline-block", marginLeft: "5px"}}></div>;
+    onState = <span style={{width: "10px", height: "10px", borderRadius : "15px", background: "black", border: "solid 1px black", display: "inline-block", marginLeft: "5px"}}></span>;
   };
     return (
       <Row style={{margin: "10px"}}>

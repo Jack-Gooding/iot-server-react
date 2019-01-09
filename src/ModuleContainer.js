@@ -26,7 +26,7 @@ render() {
     return (
       <Row className="ModuleContainer">
       <Col>
-        <Row>
+        <Row style={{marginRight: 0, paddingRight: 0, justifyContent: "flex-start"}}>
         <h4 style={{textDecoration: "underline", cursor: "pointer",}} onClick={this.toggle}>{this.props.title}</h4>
 
         </Row>

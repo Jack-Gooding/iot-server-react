@@ -35,7 +35,7 @@ export class WS2812B extends Component {
 
   componentWillMount() {
     this.isPalindrome("palap");
-    axios.get(`http://192.168.1.162/leds`)
+    axios.get(`http://192.168.1.163/leds`)
     .then(response => {
       console.log(response.data);
       let ledArray = [];
@@ -72,7 +72,7 @@ export class WS2812B extends Component {
     }
 
     updateLEDs() {
-      axios.post(`http://192.168.1.162/leds`, {
+      axios.post(`http://192.168.1.163/leds`, {
         red: this.state.leds[this.state.id].red,
         green: this.state.leds[this.state.id].green,
         blue: this.state.leds[this.state.id].blue,
@@ -111,7 +111,7 @@ render() {
         <input style={{width: "100%", }} type="range" min="0" max="255" color="green" value={this.state.leds[this.state.id].green} onChange={this.handleSlider} onMouseUp={this.updateLEDs}/>
         <input style={{width: "100%", }} type="range" min="0" max="255" color="blue" value={this.state.leds[this.state.id].blue} onChange={this.handleSlider} onMouseUp={this.updateLEDs}/>
         {this.state.leds.map((led, i) =>
-          <div key={i} index={i} onClick={this.handleChange.bind(this, i)} style={ { background: `rgb(${ led.red },${ led.green },${ led.blue })`, width: `20px`, height: `20px`, borderRadius: `3px`, border: `solid 1px black`, display: `inline-block`} }></div>
+          <div key={i} index={i} onClick={this.handleChange.bind(this, i)} style={ { background: `rgb(${ led.red },${ led.green },${ led.blue })`, width: `40px`, height: `40px`, borderRadius: `6px`, border: `solid 1px black`, display: `inline-block`} }></div>
           )
         }
         </Col>

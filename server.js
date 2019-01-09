@@ -21,10 +21,12 @@ const scan = TPLSmartDevice.scan() // Scans Local WiFi for packets from TP-Link 
   .on('light', light => {
     light.info()
       .then(status => {
+        console.log(light);
           let newPlug = { //reads info from returned event emitter, parses useful info into an object, and pushes to array.
             name: light._sysinfo.alias,
             ip: light.ip,
             on: light._sysinfo.relay_state,
+            on_time: light._sysinfo.on_time,
           };
           tplinkPlugs.push(newPlug)
           scan.stop();

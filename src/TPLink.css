@@ -12,4 +12,5 @@ input {
 
 .tplink-slider {
   transform: translateY(10px);
+  width: auto;
 }

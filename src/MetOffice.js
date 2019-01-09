@@ -145,7 +145,7 @@ render() {
         <Col>
         <ButtonGroup style={{display: "flex", margin: "10px 0"}}>
         {this.state.days.map((day, i) =>
-          <Button color="primary" size="lg" key={i} index={i} onClick={this.changeDate} active={this.state.currentDate == i} style={{padding: `0 15px`, flex: "1"}}>
+          <Button color="primary" size="lg" key={i} index={i} onClick={this.changeDate} active={this.state.currentDate === i} style={{padding: `0 15px`, flex: "1"}}>
           {day.date}{parseInt(day.date.split("")[1]) > 3  ? "th" : (parseInt(day.date.split("")[1]) === 1 ? "st" : (parseInt(day.date.split("")[1]) === 2 ? "nd" : "rd")) }
             </Button>
           )
@@ -157,7 +157,7 @@ render() {
         <Col>
         <ButtonGroup style={{display: "flex",}}>
         {this.state.days[this.state.currentDate].times.map((time, j) =>
-          <Button key={j} index={j} onClick={this.changeTime} active={this.state.currentTime == j} style={{display: `inline-block`, padding: `0 15px`, flex: "1"}}>{time.time}:00</Button>
+          <Button key={j} index={j} onClick={this.changeTime} active={this.state.currentTime === j} style={{display: `inline-block`, padding: `0 15px`, flex: "1"}}>{time.time}:00</Button>
         )}
         </ButtonGroup>
         </Col>

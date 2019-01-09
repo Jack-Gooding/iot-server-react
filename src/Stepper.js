@@ -9,8 +9,10 @@ export class Stepper extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      direction: "clockwise",
-      steps: 2000,
+      currentPosition: 0,
+      maxSpeed: 0,
+      acceleration: 0,
+      speed: 0,
     };
 
     this.updateStepper = this.updateStepper.bind(this); //This is needed because getHueData uses the 'this' keyword
@@ -21,10 +23,24 @@ export class Stepper extends Component {
 
 
   componentWillMount() {
+    axios.get(`http://192.168.1.158/blinds`)
+    .then(response => {
+      console.log(response.data);
+      this.setState({
+        currentPosition: response.data.deploymentSteps,
+        maxSpeed: response.data.MaxSpeed,
+        acceleration: response.data.Acceleration,
+        speed: response.data.Speed,
+      });
+
+    })
+    .catch(error => {
+      console.log(error);
+    });
     }
 
     handleChange(event) {
-      this.setState({ steps: event.target.value });
+      this.setState({ [event.target.getAttribute('data-name')]: event.target.value });
     }
 
     updateDirection() {
@@ -33,9 +49,8 @@ export class Stepper extends Component {
 
 
     updateStepper() {
-      axios.post(`http://192.168.1.163/stepper`, {
-        steps: this.state.steps,
-        direction: this.state.direction,
+      axios.post(`http://192.168.1.158/blinds`, {//163//158
+        moveDistance: this.state.currentPosition,
         headers: {
         'Content-Type': 'application/json'
     }})
@@ -53,10 +68,16 @@ render() {
       <div>
         <Row>
         <Col>
-          <input value={this.state.steps} onChange={this.handleChange} />
+          <input value={this.state.currentPosition} data-name="currentPosition" onChange={this.handleChange} />
           <Button onClick={this.updateStepper}>Submit</Button>
-          <Button onClick={this.updateDirection}>Submit</Button>
-          <p>{this.state.direction}</p>
+          <input type="range" min="-65000" max="0" value={this.state.currentPosition} data-name="currentPosition" onChange={this.handleChange}/>
+          <p>Current Position {this.state.currentPosition}</p>
+          <input type="range" min="0" max="2000" value={this.state.maxSpeed} data-name="maxSpeed" onChange={this.handleChange}/>
+          <p>Max Speed {this.state.maxSpeed}</p>
+          <input type="range" min="0" max="200" value={this.state.acceleration} data-name="acceleration" onChange={this.handleChange}/>
+          <p>Acceleration {this.state.acceleration}</p>
+          <input type="range" min="0" max="2000" value={this.state.peed} data-name="speed" onChange={this.handleChange}/>
+          <p>Speed {this.state.speed}</p>
 
         </Col>
         </Row>
