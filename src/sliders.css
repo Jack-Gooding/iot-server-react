@@ -3,7 +3,7 @@ input[type=range] {
   -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
   width: 100%; /* Specific width is required for Firefox. */
   background: transparent; /* Otherwise white in Chrome */
-  height: 40px;
+  height: 25px;
   margin: 0;
 }
 
@@ -165,6 +165,11 @@ input[type=range][color=brightness][orient=vertical]::-moz-range-progress {
   width: 9px;
   border-radius: 4.2px;
 }
+input[type=range][color=stepper]::-moz-range-progress {
+  background-color: rgb(125,90,60);
+  height: 9px;
+  border-radius: 4.2px;
+}
 
 input[type=range]::-ms-track {
   width: 100%;
@@ -193,4 +198,11 @@ input[type=range]::-ms-fill-upper {
 
 input[type=range]:focus::-ms-fill-upper {
   background: #367ebd;
+}
+
+
+input[type=range][datapower="true"]::-moz-range-progress {
+  background-color: #00bb00;
+  height: 9px;
+  border-radius: 4.2px;
 }

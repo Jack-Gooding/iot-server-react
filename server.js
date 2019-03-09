@@ -13,27 +13,56 @@ const app = express();
 const bodyParser = require('body-parser');
 
 const PhilipsHue = require("node-hue-api");
+
+
 const TPLSmartDevice = require('tplink-lightbulb'); //Allows control of TP-Link HS100 Wifi smart plugs
+const {Client} = require('tplink-smarthome-api');//Allows control of TP-Link HS100 Wifi smart plugs
+let tpDiscoveryTimeout = 1000;
+let tpDiscoveryInterval = 2000;
+let tpDiscoveryCheck = false;
+//https://github.com/plasticrake/tplink-smarthome-api/blob/master/API.md
 
 let tplinkPlugs = [];
 
-const scan = TPLSmartDevice.scan() // Scans Local WiFi for packets from TP-Link devices
-  .on('light', light => {
-    light.info()
-      .then(status => {
-        console.log(light);
-          let newPlug = { //reads info from returned event emitter, parses useful info into an object, and pushes to array.
-            name: light._sysinfo.alias,
-            ip: light.ip,
-            on: light._sysinfo.relay_state,
-            on_time: light._sysinfo.on_time,
-          };
-          tplinkPlugs.push(newPlug)
-          scan.stop();
-      })
-      .catch(error => {
-      })
-});
+  const TPLink = new Client();
+
+  function gatherTPLink() {
+    // Look for devices, log to console, and turn them on
+    if (!tpDiscoveryCheck) {
+    console.log("Searching for TP Link devices...")
+    tpDiscoveryCheck = true;
+    TPLink.startDiscovery({
+        discoveryInterval: tpDiscoveryInterval,
+        discoveryTimeout: tpDiscoveryTimeout,
+        offlineTolerance: 5,
+    }).on('device-new', (device) => {
+      device.getSysInfo()
+      .then( () => {
+        tplinkPlugs.push(device);
+        console.log(`${device.alias}: ${device._sysInfo.relay_state}`);
+      }).catch(function(err) {
+        console.log(err);
+      });
+      device.setPowerState(true);
+    }).on('device-offline', (device) => {
+      console.log(device);
+      console.log(`${device.alias} offline!`);
+    }).on('discovery-invalid', (error) => {
+      console.log(error);
+      console.log("Discovery failed.");
+    }).on('error', (error) => {
+      console.log(error);
+    });
+    setTimeout(function(){
+      tpDiscoveryCheck = false;
+      TPLink.stopDiscovery();
+    }, tpDiscoveryTimeout);
+
+  }
+}
+gatherTPLink();
+
+
 
 HueApi = PhilipsHue.HueApi,
 lightState = PhilipsHue.lightState;
@@ -58,7 +87,6 @@ hueApi.lights(function(err, devices) {
     for (let i = 0; i < lightsJSON.length; i++) {
       //console.log(lightsJSON[i]);
       //If the light bulb is on, get info from the hub.
-      console.log(`Found bulb: '${lightsJSON[i].name}', State:${lightsJSON[i].state.reachable}`)
       //if (lightsJSON[i].state.reachable) {
         reachableDevices++;
         lightStatus.push(
@@ -77,8 +105,10 @@ hueApi.lights(function(err, devices) {
 
   };
   lightStatus = lightStatus.slice((lightStatus.length - reachableDevices));
-  console.log(`Found ${lightStatus.length} lights.`);
-  console.log(lightStatus);
+  console.log(`  Found ${lightStatus.length} lights.`);
+  lightStatus.forEach(function(device) {
+    console.log(`    ${device.name}: ${device.on ? "on" : "off"}`);
+  })
   if (process.argv[2].toLowerCase() === "random") {
     //console.log("randomising lights");
     lightStatus.forEach(function(light) {
@@ -133,20 +163,64 @@ app.post('/api/hue', (req, res) => {
 
 app.post('/api/tplink', (req, res) => {
   console.log(req.body);
-  let plugIp = req.body.ip;
-  tplinkPlugs[req.body.index].on = req.body.on === 1 ? 0 : 1;
-  const plug = new TPLSmartDevice(plugIp)
+  tplinkPlugs.forEach(function(device) {
+    if (device.alias === req.body.name) {
+      console.log(device._sysInfo.relay_state);
+      device.setPowerState(!req.body.on).then(function(response) {
+        console.log(response);
+        console.log(device._sysInfo.relay_state);
+        let payload = [];
+        tplinkPlugs.forEach(function(device) {
+          payload.push({
+            name: device.alias,
+            ip: device.host,
+            on: device._sysInfo.relay_state ? true : false,
+            status: device.status,
+          });
+        })
+        res.send(payload);
+      });
+    };
+  });
+  //let plugIp = req.body.ip;
+  //tplinkPlugs[req.body.index].on = req.body.on === 1 ? 0 : 1;
+  /*const plug = new TPLSmartDevice(plugIp)
   plug.power(req.body.on === 1 ? 0 : 1)
 .then(status => {
   console.log("Turning "+req.body.name+" "+(req.body.on === 1 ? "off" : "on")+"!");
   res.send(tplinkPlugs);
 })
-.catch(err => console.error(err))
+.catch(err => console.error(err))*/
+
 });
 
 app.get('/api/tplink', (req, res) => {
-  console.log("tplink");
-  res.send(tplinkPlugs);
+  let payload = [];
+  tplinkPlugs.forEach(function(device) {
+    payload.push({
+      name: device.alias,
+      ip: device.host,
+      on: device._sysInfo.relay_state ? true : false,
+      status: device.status,
+    });
+  })
+  res.send(payload);
+});
+
+app.get('/api/refresh', (req, res) => {
+  console.log('refreshing devices...')
+  let payload = [];
+  tplinkPlugs.forEach(function(device) {
+    console.log(device.alias);
+    payload.push({
+      name: device.alias,
+      ip: device.host,
+      on: device._sysInfo.relay_state ? true : false,
+      status: device.status,
+    });
+  })
+    res.send(payload);
+    gatherTPLink();
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));

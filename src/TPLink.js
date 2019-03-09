@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Col } from 'reactstrap';
 import Slider from './Slider';
+import RefreshIcon from './RefreshIcon'
 
 import './TPLink.css';
 const axios = require('axios');
@@ -12,12 +13,12 @@ export class TPLink extends Component {
     this.state = {
       plugs: [{
         name:  "3D Printer",
-        on: 1,
+        on: true,
         ip: 0,
       },
       {
         name:  "Desk Fan",
-        on: 0,
+        on: false,
         ip: 0,
       }],
     };
@@ -27,14 +28,16 @@ export class TPLink extends Component {
 
   updateState(data) {
     let plugArray = [];
+    console.log("updating");
     data.data.forEach(plugs => {
       plugArray.push({
         name:  plugs.name,
         on: plugs.on,
         ip: plugs.ip,
-        on_time: plugs.on_time,
       })
     });
+    console.log(plugArray);
+    console.log(this.state.plugs);
     this.setState({plugs: plugArray,});
   }
 
@@ -78,8 +81,8 @@ render() {
   <Col className="plug" key={i}>
   <div>
     <p className="tplink-name" style={pStyle}>{plug.name}</p>
-    <Slider type="range" min="0" max="1"  onChange={this.handleChange} value={this.state.plugs[i].on} index={i}/>
-    <p className="tplink-state" style={pStyle}>{plug.on === 1 ? "On" : "Off"}</p>
+    <Slider type="range" min="0" max="1"  onChange={this.handleChange} datapower={this.state.plugs[i].on} value={this.state.plugs[i].on ? 1 : 0} index={i}/>
+    <p className="tplink-state" style={pStyle}>{plug.on ? "On" : "Off"}</p>
     <p>{plug.on_time}</p>
     </div>
 

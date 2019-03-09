@@ -11,9 +11,16 @@ import {MetOffice} from './MetOffice';
 import { Container} from 'reactstrap';
 import {WS2812B} from './WS2812B';
 import {ScreenLights} from './ScreenLights';
+import {RefreshIcon} from './RefreshIcon';
+
 
 
 import {Stepper} from './Stepper';
+
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faCheckSquare, faCoffee, faSquare, faCircle, faPowerOff } from '@fortawesome/free-solid-svg-icons'
+import { faCircle as farCircle } from '@fortawesome/fontawesome-free-regular'
+library.add(faCheckSquare, faCoffee, faSquare, faCircle, faPowerOff, farCircle)
 
 const axios = require('axios');
 
@@ -28,7 +35,7 @@ class App extends Component {
     }
   }
   componentWillMount() {
-    axios.get(`https://api.nasa.gov/planetary/apod?date=2018-12-09&api_key=DEMO_KEY`, { //https://api.nasa.gov/api.html#apod
+    /*axios.get(`https://api.nasa.gov/planetary/apod?date=2018-12-09&api_key=DEMO_KEY`, { //https://api.nasa.gov/api.html#apod
     })
   .then(response => {
     console.log(response.data);
@@ -39,7 +46,7 @@ class App extends Component {
   })
   .catch(error => {
     console.log(error);
-  });
+  });*/
   }
 
 
@@ -50,7 +57,8 @@ render() {
     return (
       <div className="App" style={{backgroundImage: `url(${this.state.backgroundImg})`, paddingTop: "25px"}}>
       <Container>
-        <ModuleContainer title="Phillips Hue 2">
+        <RefreshIcon update={this.updateLEDs} onState={this.state.onState}/>
+        <ModuleContainer title="Phillips Hue">
           <HueContainer2/>
         </ModuleContainer>
 

@@ -35,7 +35,7 @@ export class WS2812B extends Component {
 
   componentWillMount() {
     this.isPalindrome("palap");
-    axios.get(`http://192.168.1.163/leds`)
+    axios.get(`http://192.168.1.251/leds`)
     .then(response => {
       console.log(response.data);
       let ledArray = [];
@@ -72,7 +72,7 @@ export class WS2812B extends Component {
     }
 
     updateLEDs() {
-      axios.post(`http://192.168.1.163/leds`, {
+      axios.post(`http://192.168.1.251/leds`, {
         red: this.state.leds[this.state.id].red,
         green: this.state.leds[this.state.id].green,
         blue: this.state.leds[this.state.id].blue,

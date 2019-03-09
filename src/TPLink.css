@@ -3,14 +3,24 @@ input {
 
 }
 
+.tplink {
+  display: flex;
+}
+
+.plug > div {
+  display: flex;
+  border: solid 1px black;
+  border-radius: 10px;
+}
+
 .tplink-name, .tplink-slider, .tplink-state  {
-  width: 40%;
-  margin: 5px 15px;
-  max-width: 100px;
+  width: 50%;
+  margin: 5px 5px;
+  padding: 0 10px;
   display: inline-block;
 }
 
 .tplink-slider {
-  transform: translateY(10px);
+  transform: translateY(6px);
   width: auto;
 }

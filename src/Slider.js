@@ -11,8 +11,8 @@ export class Slider extends Component {
 
 
   handleChange(e) {
-    console.log(`props: ${this.props.value}`);
-    console.log(`value: ${e.target.value}`);
+    //console.log(`props: ${this.props.value}`);
+    //console.log(`value: ${e.target.value}`);
 
     if (this.props.value != e.target.value) {
       this.props.onChange(this.props.index, e.target.value);
@@ -25,7 +25,7 @@ render() {
 
     return (
       <div>
-        <input className="tplink-slider" type="range" min={this.props.min} max={this.props.max}  onChange={this.handleChange} onDoubleClick={this.handleChange} value={this.props.value}/>
+        <input className="tplink-slider" type="range" min={this.props.min} max={this.props.max} datapower={this.props.datapower ? "true" : "false"} onChange={this.handleChange} onDoubleClick={this.handleChange} value={this.props.value}/>
       </div>
     );
   }

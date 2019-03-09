@@ -72,7 +72,7 @@ render() {
   if (this.props.type === "Extended color light") {
     checkType = <Col sm="9">
                     <Row>
-                    <Col sm="8">
+                    <Col sm="8" style={{display: "flex",}}>
                       <input style={{width: "100%", }} type="range" min="0" max="255" color="red" value={this.state.red} onChange={this.handleSlider}/>
                       <input style={{width: "100%", }} type="range" min="0" max="255" color="green" value={this.state.green} onChange={this.handleSlider}/>
                       <input style={{width: "100%", }} type="range" min="0" max="255" color="blue" value={this.state.blue} onChange={this.handleSlider}/>

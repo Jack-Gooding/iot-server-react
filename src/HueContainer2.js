@@ -149,16 +149,17 @@ height: "100%"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" preser
         </g>
         </svg>
         </div>
-          <div>{light.name}</div>
-          <div>{light.on}</div>
-          <div>
-            <input min="0" max="255" color-id="0" color="red" onChange={this.handleChange} value={this.state.lights[i].rgb.split('rgb(')[1].split(')')[0].split(',')[0]} className="tplink-slider" type="range" index={i}/>
-            <input min="0" max="255" color-id="1" color="green" onChange={this.handleChange} value={this.state.lights[i].rgb.split('rgb(')[1].split(')')[0].split(',')[1]} className="tplink-slider" type="range" index={i}/>
-            <input min="0" max="255" color-id="2" color="blue" onChange={this.handleChange} value={this.state.lights[i].rgb.split('rgb(')[1].split(')')[0].split(',')[2]} className="tplink-slider" type="range" index={i}/>
-          </div>
-          <div>
-            <input style={{width: "100%"}} min="0" max="255" color="brightness" onChange={this.handleChange} value={this.state.lights[i].brightness} type="range" index={i}/>
-          </div>
+          <div>{light.name} {light.on ? "yes": "no"} </div>
+          <div style={{margin:"2%",}}>
+            <div style={{display: "flex", flexWrap: "nowrap", flexDirection: "column",}}>
+                <input style={{flexGrow: 1,}} min="0" max="255" color-id="0" color="red" onChange={this.handleChange} value={this.state.lights[i].rgb.split('rgb(')[1].split(')')[0].split(',')[0]}  type="range" index={i}/>
+                <input style={{width: "100%"}} min="0" max="255" color-id="1" color="green" onChange={this.handleChange} value={this.state.lights[i].rgb.split('rgb(')[1].split(')')[0].split(',')[1]}  type="range" index={i}/>
+                <input style={{}} min="0" max="255" color-id="2" color="blue" onChange={this.handleChange} value={this.state.lights[i].rgb.split('rgb(')[1].split(')')[0].split(',')[2]}  type="range" index={i}/>
+            </div>
+            <div>
+              <input style={{width: "100%"}} min="0" max="255" color="brightness" onChange={this.handleChange} value={this.state.lights[i].brightness} type="range" index={i}/>
+            </div>
+            </div>
         </div>
         )}
       </div>

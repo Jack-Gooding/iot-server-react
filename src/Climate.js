@@ -17,7 +17,7 @@ export class Climate extends Component {
 
 
   componentWillMount() {
-    axios.get('http://192.168.1.163/climate'
+    axios.get('http://192.168.1.251/climate'
 	)
     .then(response => {
       console.log(response.data);
