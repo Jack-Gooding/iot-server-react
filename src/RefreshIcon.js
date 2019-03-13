@@ -1,17 +1,13 @@
 import React, { Component } from 'react';
-import {Row, Col} from 'reactstrap';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faSyncAlt } from '@fortawesome/free-solid-svg-icons'
-import { faCircle as farCircle } from '@fortawesome/fontawesome-free-regular'
 import './App.css';
 const axios = require('axios');
 
 
 export class RefreshIcon extends Component {
 
-  constructor(props) {
-    super(props);
-  };
 
     iconStyle() {
       return {

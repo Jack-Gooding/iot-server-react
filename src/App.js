@@ -3,7 +3,6 @@ import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 import {ModuleContainer} from './ModuleContainer';
-import {HueContainer} from './HueContainer';
 import {HueContainer2} from './HueContainer2';
 import {TPLink} from './TPLink';
 import {Climate} from './Climate';
@@ -22,7 +21,6 @@ import { faCheckSquare, faCoffee, faSquare, faCircle, faPowerOff } from '@fortaw
 import { faCircle as farCircle } from '@fortawesome/fontawesome-free-regular'
 library.add(faCheckSquare, faCoffee, faSquare, faCircle, faPowerOff, farCircle)
 
-const axios = require('axios');
 
 
 

@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-import {Row, Col} from 'reactstrap';
-import PowerIndicator from './PowerIndicator';
+import {Row, } from 'reactstrap';
 import Slider from './Slider';
 
 import './App.css';
 const axios = require('axios');
-var FA = require('react-fontawesome');
 
 
 export class ScreenLights extends Component {

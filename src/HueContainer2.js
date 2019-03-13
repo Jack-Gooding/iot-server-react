@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {Row, Col} from 'reactstrap';
-import HueColour from './HueColour';
-
+import Slider from './Slider';
 const axios = require('axios');
 
 export class HueContainer2 extends Component {
@@ -94,6 +93,7 @@ export class HueContainer2 extends Component {
       green:  this.state.lights[index].rgb.split('rgb(')[1].split(')')[0].split(',')[1],
       blue:  this.state.lights[index].rgb.split('rgb(')[1].split(')')[0].split(',')[2],
       id: this.state.lights[index].id,
+      on : this.state.lights[index].on,
     })
     .then(response => {
       console.log(response);
@@ -104,22 +104,29 @@ export class HueContainer2 extends Component {
   };
 
   handleChange(event) {
+    console.log(event);
     let newValue = event.target.value;
     let currentState = this.state.lights;
     let index = event.target.getAttribute('index');
     let color = event.target.getAttribute('color-id');
-    console.log(color);
-    if (color === null) {
+    let power = event.target.getAttribute('datapower');
+
+    if (color === "brightness") {
       currentState[index].brightness = newValue;
-    } else {
+
+    } else if (color) {
       console.log(color);
       let rgb = this.state.lights[index].rgb;
       //console.log(rgb);
       rgb = rgb.split('rgb(')[1].split(')')[0].split(',');
       rgb[color] = newValue;
-      rgb = `rgb(${rgb.join(",")})`
+      rgb = `rgb(${rgb.join(",")})`;
       currentState[index].rgb = rgb;
+
+    } else if (power !== undefined) { //check if power switch instead of rgb slider
+      currentState[index].on = newValue === "1" ? true : false;
     }
+
     this.setState({
       lights: currentState
     });
@@ -140,7 +147,7 @@ render() {
   top: 0,
   left: 0,
   width: "100%",
-height: "100%"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid meet" width="256pt" height="256pt" version="1.0">
+  height: "100%"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" preserveAspectRatio="xMidYMid meet" width="256pt" height="256pt" version="1.0">
         <metadata>
         Created by potrace 1.15, written by Peter Selinger 2001-2017
         </metadata>
@@ -149,7 +156,13 @@ height: "100%"}} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" preser
         </g>
         </svg>
         </div>
-          <div>{light.name} {light.on ? "yes": "no"} </div>
+          <Row><Col sm="7" style={{padding: 0, paddingLeft: "10%", marginRight: 0,}}>
+          <p style={{width: "100%",paddingTop:"5%"}}>{light.name}</p>
+          </Col>
+          <Col style={{marginLeft: 0, paddingLeft: 0,}}>
+          <Slider type="range" min="0" max="1"  onChange={this.handleChange} datapower={light.on} value={light.on ? 1 : 0} index={i}/>
+          </Col>
+          </Row>
           <div style={{margin:"2%",}}>
             <div style={{display: "flex", flexWrap: "nowrap", flexDirection: "column",}}>
                 <input style={{flexGrow: 1,}} min="0" max="255" color-id="0" color="red" onChange={this.handleChange} value={this.state.lights[i].rgb.split('rgb(')[1].split(')')[0].split(',')[0]}  type="range" index={i}/>

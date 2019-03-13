@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
-import { Col } from 'reactstrap';
+import {Row, Col } from 'reactstrap';
 import Slider from './Slider';
-import RefreshIcon from './RefreshIcon'
 
 import './TPLink.css';
 const axios = require('axios');
@@ -52,8 +51,9 @@ export class TPLink extends Component {
     });
   }
 
-  handleChange(index, newValue) {
-    console.log(newValue);
+  handleChange(event) {
+    let index = event.target.getAttribute('index');
+
     axios.post('/api/tplink', {
       name:  this.state.plugs[index].name,
       on: this.state.plugs[index].on,
@@ -73,25 +73,27 @@ export class TPLink extends Component {
 render() {
 
   const pStyle = {
-    width: "30%",
-    display: "block-inline",
 };
 
   const smartPlugs = this.state.plugs.map((plug, i) =>
-  <Col className="plug" key={i}>
-  <div>
-    <p className="tplink-name" style={pStyle}>{plug.name}</p>
-    <Slider type="range" min="0" max="1"  onChange={this.handleChange} datapower={this.state.plugs[i].on} value={this.state.plugs[i].on ? 1 : 0} index={i}/>
-    <p className="tplink-state" style={pStyle}>{plug.on ? "On" : "Off"}</p>
-    <p>{plug.on_time}</p>
-    </div>
+  <Col xs="12" sm="6" className="plug" key={i}>
+    <Row>
+      <Col xs="12" sm="6" className="tplink-name">
+        <p style={pStyle}>{plug.name}</p>
+      </Col>
+      <Col xs="12" sm="6" lg="4">
+        <Slider type="range" min="0" max="1"  onChange={this.handleChange} datapower={this.state.plugs[i].on} value={this.state.plugs[i].on ? 1 : 0} index={i}/>
+      </Col>
 
-    </Col>
+    </Row>
+  </Col>
 
 );
     return (
-      <div className="tplink">
+      <div >
+      <Row>
         {smartPlugs}
+        </Row>
         </div>
     );
   }

@@ -3,6 +3,7 @@
 //==========================//
 
 const colour_converter = require('./modules/colour_converter'); // Custom module to convert Philips CIE values to RGB and visa versa
+const tpLink = require('./modules/tpLink'); // Custom module to convert Philips CIE values to RGB and visa versa
 
 //==========================//
 // Node.js // npm  packages //
@@ -12,10 +13,49 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 
+const axios = require('axios');
+
+
+const Database = require('better-sqlite3');
+//https://github.com/JoshuaWise/better-sqlite3/blob/f9166c0199b10455b21c217a6749a4438b553de3/docs/api.md
+const db = new Database('./server.db', {verbose: console.log });
+process.on('exit', () => db.close());
+process.on('SIGHUP', () => process.exit(128 + 1));
+process.on('SIGINT', () => process.exit(128 + 2));
+process.on('SIGTERM', () => process.exit(128 + 15));
+
+//when formatting for date and time, "YYYY-MM-DD HH:MM:SS" is the appropriate format to use.
+
+const createDb = db.prepare(`CREATE TABLE if not exists climate(
+                                          temperatureid integer PRIMARY KEY,
+                                          datetime TEXT DEFAULT CURRENT_TIMESTAMP,
+                                          location TEXT NOT NULL,
+                                          temperature NUMBER NOT NULL,
+                                          humidity NUMBER NOT NULL
+                                          )`);
+createDb.run();
+
+
+const insertClimate = db.prepare(`INSERT INTO climate(location, temperature, humidity) VALUES($location, $temperature, $humidity)`);
+
+  axios.get('http://192.168.1.251/climate')
+  .then(response => {
+    insertClimate.run({
+      temperature: response.data.temperature,
+      humidity: response.data.humidity,
+      location: response.data.location
+    });
+  })
+  .catch(error => {
+    console.log(error);
+  });
+  const readClimate = db.prepare(`SELECT * FROM climate ORDER BY temperatureid DESC limit 80`);
+
+  console.log(readClimate.all());
 const PhilipsHue = require("node-hue-api");
 
 
-const TPLSmartDevice = require('tplink-lightbulb'); //Allows control of TP-Link HS100 Wifi smart plugs
+//const TPLSmartDevice = require('tplink-lightbulb'); //Allows control of TP-Link HS100 Wifi smart plugs
 const {Client} = require('tplink-smarthome-api');//Allows control of TP-Link HS100 Wifi smart plugs
 let tpDiscoveryTimeout = 1000;
 let tpDiscoveryInterval = 2000;
@@ -31,15 +71,25 @@ let tplinkPlugs = [];
     if (!tpDiscoveryCheck) {
     console.log("Searching for TP Link devices...")
     tpDiscoveryCheck = true;
+
     TPLink.startDiscovery({
         discoveryInterval: tpDiscoveryInterval,
         discoveryTimeout: tpDiscoveryTimeout,
         offlineTolerance: 5,
+
     }).on('device-new', (device) => {
       device.getSysInfo()
       .then( () => {
-        tplinkPlugs.push(device);
-        console.log(`${device.alias}: ${device._sysInfo.relay_state}`);
+        let notExist = true;
+        tplinkPlugs.forEach(function(d) { //fixes issue with occasional duplicate items
+          if (device === d) {
+            notExist = true;
+          }
+        });
+        if (notExist) {
+          tplinkPlugs.push(device);
+          console.log(`${device.alias}: ${device._sysInfo.relay_state}`);
+      }
       }).catch(function(err) {
         console.log(err);
       });
@@ -66,7 +116,6 @@ gatherTPLink();
 
 HueApi = PhilipsHue.HueApi,
 lightState = PhilipsHue.lightState;
-
 
 let host = "192.168.1.64",
 username = "8FNEwdPyoc9eVRxP7ukCnf4QFowMK2aoHOmBuJdi",
@@ -156,7 +205,7 @@ app.get('/api/hueLight/:lightId', (req, res) => {
 app.post('/api/hue', (req, res) => {
   console.log(req.body);
   state = lightState.create().on().rgb(req.body.red,req.body.green,req.body.blue).brightness(req.body.brightness);
-  if (req.body.brightness <= 5) {state.off(); };
+  if (req.body.brightness <= 5 || req.body.on === false) {state.off(); };
   hueApi.setLightState(req.body.id, state);
   res.send(lightStatus);
 });
@@ -206,6 +255,12 @@ app.get('/api/tplink', (req, res) => {
   })
   res.send(payload);
 });
+
+app.get('/climate', (req, res) => {
+  res.send(readClimate.all());
+});
+
+
 
 app.get('/api/refresh', (req, res) => {
   console.log('refreshing devices...')

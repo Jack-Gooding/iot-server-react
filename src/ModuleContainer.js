@@ -25,7 +25,7 @@ export class ModuleContainer extends Component {
 render() {
     return (
       <Row className="ModuleContainer">
-      <Col>
+      <Col style={{textAlign: "center"}}>
         <Row style={{marginRight: 0, paddingRight: 0, justifyContent: "flex-start"}}>
         <h4 style={{textDecoration: "underline", cursor: "pointer",}} onClick={this.toggle}>{this.props.title}</h4>
 
