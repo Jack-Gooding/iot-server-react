@@ -47,20 +47,23 @@ export class HueContainer2 extends Component {
     this.handleSlider = this.handleSlider.bind(this); //This is needed because getHueData uses the 'this' keyword
     this.getHueData = this.getHueData.bind(this);
     this.handleChange = this.handleChange.bind(this); //This is needed because getHueData uses the 'this' keyword
-
+    this.handleMouseUp = this.handleMouseUp.bind(this);
 
   };
 
 
   componentWillMount() {
-    //this.getHueData();
+    this.getHueData();
     }
 
     getHueData() {
       axios.get('/api/hue')
         .then(response => {
           // handle success
-          //console.log(response.data);
+          if (response.data.length < 1) {
+            console.log("Failed to retrieve Hue lights from server.")
+          } else {
+          console.log(response.data);
           let lightArray = [];
           response.data.forEach(element => {
             lightArray.push({
@@ -74,6 +77,7 @@ export class HueContainer2 extends Component {
           });
           this.setState({lights: lightArray});
           console.log(lightArray);
+        }
         })
         .catch(error => {
           // handle error
@@ -83,7 +87,19 @@ export class HueContainer2 extends Component {
           // always executed
         });
     };
-
+  updateHueData() {
+    axios.get('/api/update-hue')
+      .then(response => {
+        console.log(response.data);
+      })
+      .catch(error => {
+        // handle error
+        console.log(error);
+      })
+      .then(() => {
+        // always executed
+      });
+  }
   handleSlider(index) {
     //this.setState({[event.target.getAttribute('color')]: event.target.value});
     // Send a POST request
@@ -103,23 +119,55 @@ export class HueContainer2 extends Component {
     });
   };
 
+  handleMouseUp(event) {
+    console.log(event);
+    let newValue = event.target.value;
+    let currentState = this.state.lights;
+    let index = event.target.getAttribute('index');
+    let colorId = event.target.getAttribute('color-id');
+    let color = event.target.getAttribute('color');
+    let power = event.target.getAttribute('datapower');
+
+    if (color === "brightness") {
+      currentState[index].brightness = newValue;
+      console.log(newValue);
+    } else if (colorId) {
+      console.log(colorId);
+      let rgb = this.state.lights[index].rgb;
+      //console.log(rgb);
+      rgb = rgb.split('rgb(')[1].split(')')[0].split(',');
+      rgb[colorId] = newValue;
+      rgb = `rgb(${rgb.join(",")})`;
+      currentState[index].rgb = rgb;
+
+    } else if (power !== undefined) { //check if power switch instead of rgb slider
+      currentState[index].on = newValue === "1" ? true : false;
+    }
+
+    this.setState({
+      lights: currentState
+    });
+    this.handleSlider(index);
+  }
+
   handleChange(event) {
     console.log(event);
     let newValue = event.target.value;
     let currentState = this.state.lights;
     let index = event.target.getAttribute('index');
-    let color = event.target.getAttribute('color-id');
+    let colorId = event.target.getAttribute('color-id');
+    let color = event.target.getAttribute('color');
     let power = event.target.getAttribute('datapower');
 
     if (color === "brightness") {
       currentState[index].brightness = newValue;
-
-    } else if (color) {
-      console.log(color);
+      console.log(newValue);
+    } else if (colorId) {
+      console.log(colorId);
       let rgb = this.state.lights[index].rgb;
       //console.log(rgb);
       rgb = rgb.split('rgb(')[1].split(')')[0].split(',');
-      rgb[color] = newValue;
+      rgb[colorId] = newValue;
       rgb = `rgb(${rgb.join(",")})`;
       currentState[index].rgb = rgb;
 
@@ -170,11 +218,12 @@ render() {
                 <input style={{}} min="0" max="255" color-id="2" color="blue" onChange={this.handleChange} value={this.state.lights[i].rgb.split('rgb(')[1].split(')')[0].split(',')[2]}  type="range" index={i}/>
             </div>
             <div>
-              <input style={{width: "100%"}} min="0" max="255" color="brightness" onChange={this.handleChange} value={this.state.lights[i].brightness} type="range" index={i}/>
+              <input style={{width: "100%"}} min="0" max="100" color="brightness" onMouseUp={this.handleMouseUp} onChange={this.handleChange} value={this.state.lights[i].brightness} type="range" index={i}/>
             </div>
             </div>
         </div>
         )}
+        <button onClick={this.updateHueData}></button>
       </div>
     );
   }

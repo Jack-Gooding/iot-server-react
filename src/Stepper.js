@@ -24,7 +24,7 @@ export class Stepper extends Component {
 
 
   componentWillMount() {
-    axios.get(`http://192.168.1.253/blinds`)
+    axios.get(`http://192.168.1.205/blinds`)
     .then(response => {
       console.log(response.data);
       this.setState({
@@ -51,7 +51,7 @@ export class Stepper extends Component {
 
 
     updateStepper() {
-      axios.post(`http://192.168.1.253/blinds`, {//163//158
+      axios.post(`http://192.168.1.205/blinds`, {//163//158
         moveDistance: this.state.nextPosition,
         headers: {
         'Content-Type': 'application/json'

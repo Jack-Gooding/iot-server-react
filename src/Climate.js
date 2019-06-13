@@ -11,6 +11,8 @@ export class Climate extends Component {
     this.state = {
       averageTemp: "--",
       averageHumidity: "--",
+      temperature: "--",
+      humidity: "--",
       data: [["Date/Time","Temperature","Humidity"],],
     };
   };
@@ -38,10 +40,16 @@ export class Climate extends Component {
       let newData = this.state.data;
       let averageTemp = 0;
       let averageHumidity = 0;
+      let temperature;
+      let humidity;
       for (let i = response.data.length-1; i > 0; i--)  {
           newData.push([response.data[i].datetime,response.data[i].temperature,response.data[i].humidity]);
           averageTemp += response.data[i].temperature;
           averageHumidity += response.data[i].humidity;
+          if (i === 1) {
+            temperature = response.data[i].temperature;
+            humidity = response.data[i].humidity;
+          }
       }
       averageTemp = averageTemp/response.data.length;
       averageHumidity = averageHumidity/response.data.length;
@@ -49,6 +57,8 @@ export class Climate extends Component {
       this.setState({
         averageTemp: averageTemp.toFixed(1),
         averageHumidity: averageHumidity.toFixed(1),
+        temperature: temperature,
+        humidity: humidity,
         data: newData,
       })
       console.log(this.state.data);
@@ -67,8 +77,12 @@ render() {
         </Row>
         <Row>
         <Col>
-        <p>Temperature: {this.state.averageTemp}°C</p>
-        <p>Humidity: {this.state.averageHumidity}%</p>
+        <p>Avg Temperature: {this.state.averageTemp}°C</p>
+        <p>Avg Humidity: {this.state.averageHumidity}%</p>
+        </Col>
+        <Col>
+        <p>Current Temperature: {this.state.temperature}°C</p>
+        <p>Current Humidity: {this.state.humidity}%</p>
         </Col>
         </Row>
         <Row>

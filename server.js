@@ -14,6 +14,7 @@ const app = express();
 const bodyParser = require('body-parser');
 
 const axios = require('axios');
+const PhilipsHue = require("node-hue-api");
 
 
 const Database = require('better-sqlite3');
@@ -26,17 +27,27 @@ process.on('SIGTERM', () => process.exit(128 + 15));
 
 //when formatting for date and time, "YYYY-MM-DD HH:MM:SS" is the appropriate format to use.
 
-const createDb = db.prepare(`CREATE TABLE if not exists climate(
+const createDb1 = db.prepare(`CREATE TABLE if not exists climate(
                                           temperatureid integer PRIMARY KEY,
                                           datetime TEXT DEFAULT CURRENT_TIMESTAMP,
                                           location TEXT NOT NULL,
                                           temperature NUMBER NOT NULL,
                                           humidity NUMBER NOT NULL
                                           )`);
-createDb.run();
+createDb1.run();
 
+const createDb2 = db.prepare(`CREATE TABLE if not exists door(
+                                          readingid integer PRIMARY KEY,
+                                          datetime TEXT DEFAULT CURRENT_TIMESTAMP,
+                                          location TEXT NOT NULL,
+                                          openState text NOT NULL
+                                          )`);
+createDb2.run();
 
 const insertClimate = db.prepare(`INSERT INTO climate(location, temperature, humidity) VALUES($location, $temperature, $humidity)`);
+const insertDoor = db.prepare(`INSERT INTO door(location, openState) VALUES($location, $openState)`);
+const dropDoor = db.prepare(`DROP TABLE IF EXISTS door`);
+function getClimateData() {
 
   axios.get('http://192.168.1.251/climate')
   .then(response => {
@@ -49,10 +60,16 @@ const insertClimate = db.prepare(`INSERT INTO climate(location, temperature, hum
   .catch(error => {
     console.log(error);
   });
-  const readClimate = db.prepare(`SELECT * FROM climate ORDER BY temperatureid DESC limit 80`);
+} ;
 
-  console.log(readClimate.all());
-const PhilipsHue = require("node-hue-api");
+setInterval(function() {
+  getClimateData();
+},1000*60*10);
+getClimateData();
+
+const readClimate = db.prepare(`SELECT * FROM climate ORDER BY temperatureid DESC limit 80`);
+//console.log(readClimate.all());
+const readDoorTable = db.prepare(`SELECT * FROM door ORDER BY readingid DESC limit 80`);
 
 
 //const TPLSmartDevice = require('tplink-lightbulb'); //Allows control of TP-Link HS100 Wifi smart plugs
@@ -81,9 +98,10 @@ let tplinkPlugs = [];
       device.getSysInfo()
       .then( () => {
         let notExist = true;
+        console.log(device._sysInfo);
         tplinkPlugs.forEach(function(d) { //fixes issue with occasional duplicate items
-          if (device === d) {
-            notExist = true;
+          if (device._sysInfo.deviceId === d._sysInfo.deviceId) {
+            notExist = false;
           }
         });
         if (notExist) {
@@ -125,53 +143,99 @@ state;
 
 let lightStatus = [];
 
-hueApi.lights(function(err, devices) {
-    let reachableDevices = 0;
-    if (err) throw err;
-    let lightsJSON = JSON.stringify(devices, null, 2);
-    lightsJSON = JSON.parse(lightsJSON);
-    lightsJSON = lightsJSON.lights;
-    //console.log(lightsJSON.length);
+function getHueLightData() {
+  /*hueApi.lights(function(err, devices) {
+      let reachableDevices = 0;
+      if (err) throw err;
+      let lightsJSON = JSON.stringify(devices, null, 2);
+      lightsJSON = JSON.parse(lightsJSON);
+      lightsJSON = lightsJSON.lights;
+      //console.log(lightsJSON.length);
 
-    for (let i = 0; i < lightsJSON.length; i++) {
-      //console.log(lightsJSON[i]);
-      //If the light bulb is on, get info from the hub.
-      //if (lightsJSON[i].state.reachable) {
-        reachableDevices++;
-        lightStatus.push(
-          {
-            "name":lightsJSON[i].name,
-            "type":lightsJSON[i].type,
-            "id":lightsJSON[i].id,
-            "on":lightsJSON[i].state.on,
-            "reachable":lightsJSON[i].state.reachable,
-            "brightness":lightsJSON[i].state.bri,
-                // If bulb is RGB, return the converted CIE colour, else return 'N/A'
-            "rgb": (lightsJSON[i].type === 'Extended color light') ? colour_converter.cie_to_rgb(lightsJSON[i].state.xy[0],lightsJSON[i].state.xy[1],lightsJSON[i].state.brightness) : "rgb(240,200,140)" ,
-          }
-        );
-      //};
+      for (let i = 0; i < lightsJSON.length; i++) {
+        console.log(`${lightsJSON[i].name}: ${lightsJSON[i].state.on}`);
+        //console.log(lightsJSON[i]);
+        //If the light bulb is on, get info from the hub.
+        //if (lightsJSON[i].state.reachable) {
+          reachableDevices++;
+          lightStatus.push(
+            {
+              "name":lightsJSON[i].name,
+              "type":lightsJSON[i].type,
+              "id":lightsJSON[i].id,
+              "on":lightsJSON[i].state.on,
+              "reachable":lightsJSON[i].state.reachable,
+              "brightness":lightsJSON[i].state.bri,
+                  // If bulb is RGB, return the converted CIE colour, else return 'N/A'
+              "rgb": (lightsJSON[i].type === 'Extended color light') ? colour_converter.cie_to_rgb(lightsJSON[i].state.xy[0],lightsJSON[i].state.xy[1],lightsJSON[i].state.brightness) : "rgb(240,200,140)" ,
+            }
+          );
+        //};
 
-  };
-  lightStatus = lightStatus.slice((lightStatus.length - reachableDevices));
-  console.log(`  Found ${lightStatus.length} lights.`);
-  lightStatus.forEach(function(device) {
-    console.log(`    ${device.name}: ${device.on ? "on" : "off"}`);
-  })
-  if (process.argv[2].toLowerCase() === "random") {
-    //console.log("randomising lights");
-    lightStatus.forEach(function(light) {
-      state = lightState.create().on().rgb(Math.floor(Math.random()*255),Math.floor(Math.random()*255),Math.floor(Math.random()*255)).brightness(Math.floor(Math.random()*255));
-      hueApi.setLightState(light.id, state);
-    });
-  };
-});
+    };
+    lightStatus = lightStatus.slice((lightStatus.length - reachableDevices));
+    console.log(`  Found ${lightStatus.length} lights.`);
+    lightStatus.forEach(function(device) {
+      console.log(`    ${device.name}: ${device.on}`);
+    })
+    if (process.argv[2].toLowerCase() === "random") {
+      //console.log("randomising lights");
+      lightStatus.forEach(function(light) {
+        state = lightState.create().on().rgb(Math.floor(Math.random()*255),Math.floor(Math.random()*255),Math.floor(Math.random()*255)).brightness(Math.floor(Math.random()*255));
+        hueApi.setLightState(light.id, state);
+      });
+    };
+  });*/
+  hueApi.lights()
+    .then(function(result) {
+      //console.log(JSON.stringify(result, null, 2));
+      let reachableDevices = 0;
+      let lightsJSON = JSON.stringify(result, null, 2);
+      lightsJSON = JSON.parse(lightsJSON);
+      lightsJSON = lightsJSON.lights;
+      //console.log(lightsJSON.length);
+
+      for (let i = 0; i < lightsJSON.length; i++) {
+        //console.log(lightsJSON[i]);
+        //If the light bulb is on, get info from the hub.
+        //if (lightsJSON[i].state.reachable) {
+          reachableDevices++;
+          lightStatus.push(
+            {
+              "name":lightsJSON[i].name,
+              "type":lightsJSON[i].type,
+              "id":lightsJSON[i].id,
+              "on":lightsJSON[i].state.on,
+              "reachable":lightsJSON[i].state.reachable,
+              "brightness":lightsJSON[i].state.bri,
+                  // If bulb is RGB, return the converted CIE colour, else return 'N/A'
+              "rgb": (lightsJSON[i].type === 'Extended color light') ? colour_converter.cie_to_rgb(lightsJSON[i].state.xy[0],lightsJSON[i].state.xy[1],lightsJSON[i].state.brightness) : "rgb(240,200,140)" ,
+            }
+          );
+        //};
+
+    };
+    lightStatus = lightStatus.slice((lightStatus.length - reachableDevices));
+    console.log(`  Found ${lightStatus.length} lights.`);
+    lightStatus.forEach(function(device) {
+      console.log(`    ${device.name}: ${device.on}`);
+    })
+
+    })
+    .catch(function(error) {
+      console.log(error);
+    })
+    .done();
+}
+
+getHueLightData();
+
 
 //==============//
 // Server logic //
 //==============//
 
-const port = process.env.PORT || 5000; //To change this in windows, run set PORT <PORT> in shell, in linux run PORT <PORT> node server.js
+const port = process.env.PORT || 3200; //To change this in windows, run set PORT <PORT> in shell, in linux run PORT <PORT> node server.js
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -187,8 +251,14 @@ app.use(function(req, res, next) {
 
 app.get('/api/hue', (req, res) => {
   console.log("/api/hue")
-  console.log(lightStatus);
+  //console.log(lightStatus);
   res.send(lightStatus);
+});
+
+app.get('/api/update-hue', (req, res) => {
+  console.log("/api/update-hue")
+  getHueLightData();
+  res.send("updated");
 });
 
 app.get('/api/hueLight/:lightId', (req, res) => {
@@ -203,9 +273,11 @@ app.get('/api/hueLight/:lightId', (req, res) => {
 });
 
 app.post('/api/hue', (req, res) => {
-  console.log(req.body);
+
   state = lightState.create().on().rgb(req.body.red,req.body.green,req.body.blue).brightness(req.body.brightness);
-  if (req.body.brightness <= 5 || req.body.on === false) {state.off(); };
+  if (req.body.on === false) {
+    state.off();
+  };
   hueApi.setLightState(req.body.id, state);
   res.send(lightStatus);
 });
@@ -260,7 +332,32 @@ app.get('/climate', (req, res) => {
   res.send(readClimate.all());
 });
 
+app.post('/doorlatch', (req, res) => {
 
+  console.log(req.body);
+
+  insertDoor.run({
+    location: req.body.location,
+    openState: req.body.state
+  });
+  res.send("POST received");
+});
+
+app.get('/doorlatch', (req, res) => {
+  let data = readDoorTable.all();
+  console.log(data[0]);
+  console.log(data[1]);
+  console.log(data[2]);
+  console.log(data[3]);
+
+  res.send(data);
+});
+
+app.get('/doorlatchdelete', (req, res) => {
+  dropDoor.run();
+  createDb2.run();
+  res.send("Deleted table.");
+})
 
 app.get('/api/refresh', (req, res) => {
   console.log('refreshing devices...')

@@ -206,3 +206,9 @@ input[type=range][datapower="true"]::-moz-range-progress {
   height: 9px;
   border-radius: 4.2px;
 }
+
+input[type=range][datapower="true"]::-webkit-slider-runnable-track {
+  background-color: #00bb00;
+  height: 9px;
+  border-radius: 4.2px;
+}

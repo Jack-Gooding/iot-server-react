@@ -1,14 +1,19 @@
 import React, { Component } from 'react';
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './sliders.css';
+
 
 import {ModuleContainer} from './ModuleContainer';
 import {HueContainer2} from './HueContainer2';
 import {TPLink} from './TPLink';
 import {Climate} from './Climate';
+import {DoorSensor} from './DoorSensor';
 import {MetOffice} from './MetOffice';
 import { Container} from 'reactstrap';
 import {WS2812B} from './WS2812B';
+import {NightLight} from './NightLight';
+
 import {ScreenLights} from './ScreenLights';
 import {RefreshIcon} from './RefreshIcon';
 
@@ -63,13 +68,18 @@ render() {
         <ModuleContainer title="TP-Link">
           <TPLink/>
         </ModuleContainer>
-
+        <ModuleContainer title="NightLight">
+          <NightLight/>
+        </ModuleContainer>
 
         <ModuleContainer title="Met Office API">
           <MetOffice/>
         </ModuleContainer>
         <ModuleContainer title="Climate Monitor">
         <Climate/>
+        </ModuleContainer>
+        <ModuleContainer title="Door Sensor">
+        <DoorSensor/>
         </ModuleContainer>
         <ModuleContainer title="Screen Lights">
           <ScreenLights/>
